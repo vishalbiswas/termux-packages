@@ -1,0 +1,7 @@
+##
+## Arch Linux repository mirrorlist
+## Created on 2016-10-17
+##
+
+## Sample
+#Server = https://pacman.termux.net/$repo/$arch

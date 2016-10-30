@@ -1,0 +1,29 @@
+--- ./lib/libalpm/add.c	2016-02-23 08:21:26.000000000 +0530
++++ ./lib/libalpm/add_new.c	2016-10-29 21:23:56.439185615 +0530
+@@ -110,8 +110,7 @@
+ 		struct archive_entry *entry, const char *filename)
+ {
+ 	int ret;
+-	const int archive_flags = ARCHIVE_EXTRACT_OWNER |
+-	                          ARCHIVE_EXTRACT_PERM |
++	const int archive_flags = ARCHIVE_EXTRACT_PERM |
+ 	                          ARCHIVE_EXTRACT_TIME |
+ 	                          ARCHIVE_EXTRACT_UNLINK |
+ 	                          ARCHIVE_EXTRACT_SECURE_SYMLINKS;
+@@ -235,6 +234,8 @@
+ 		gid_t entrygid = archive_entry_gid(entry);
+ #endif
+ 
++#if 0
++		/* suppress dir perm warnings */
+ 		/* case 6: existing dir, ignore it */
+ 		if(lsbuf.st_mode != entrymode) {
+ 			/* if filesystem perms are different than pkg perms, warn user */
+@@ -247,6 +248,7 @@
+ 					"filesystem: %o  package: %o\n", filename, lsbuf.st_mode & mask,
+ 					entrymode & mask);
+ 		}
++#endif
+ 
+ #if 0
+ 		/* Disable this warning until our user management in packages has improved.

@@ -1,0 +1,13 @@
+--- ./lib/libalpm/handle.c	2016-02-23 08:22:34.000000000 +0530
++++ ./lib/libalpm/handle.c	2016-10-20 23:47:24.047361711 +0530
+@@ -75,7 +75,9 @@
+ 	FREELIST(handle->known_keys);
+ #endif
+ 
+-	regfree(&handle->delta_regex);
++	if(handle->delta_regex_compiled) {
++		regfree(&handle->delta_regex);
++	}
+ 
+ 	/* free memory */
+ 	_alpm_trans_free(handle->trans);

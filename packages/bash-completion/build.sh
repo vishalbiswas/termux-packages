@@ -5,3 +5,8 @@ TERMUX_PKG_SRCURL=https://github.com/scop/bash-completion/releases/download/${TE
 TERMUX_PKG_FOLDERNAME=bash-completion-${TERMUX_PKG_VERSION}
 TERMUX_PKG_DEPENDS="bash"
 TERMUX_PKG_PLATFORM_INDEPENDENT=yes
+
+termux_step_post_make_install () {
+    # remove Slackware's makepkg completion
+    rm "${TERMUX_PREFIX}/share/bash-completion/completions/makepkg"
+}

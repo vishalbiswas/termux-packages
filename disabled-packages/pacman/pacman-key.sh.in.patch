@@ -1,0 +1,13 @@
+--- ./scripts/pacman-key.sh.in	2016-10-28 22:06:53.735535837 +0530
++++ /home/vishal/AndroidDev/pacman-key.sh.in	2016-10-28 21:49:16.000000000 +0530
+@@ -560,8 +560,8 @@
+ 	exit 1
+ fi
+ 
+-if (( (ADD || DELETE || EDITKEY || IMPORT || IMPORT_TRUSTDB || INIT || LSIGNKEY || POPULATE || RECEIVE || REFRESH || UPDATEDB) && EUID != 0 )); then
+-	error "$(gettext "%s needs to be run as root for this operation.")" "pacman-key"
++if (( (ADD || DELETE || EDITKEY || IMPORT || IMPORT_TRUSTDB || INIT || LSIGNKEY || POPULATE || RECEIVE || REFRESH || UPDATEDB) && EUID == 0 )); then
++	error "$(gettext "Do not run %s as root for this operation.")" "pacman-key"
+ 	exit 1
+ fi
+ 

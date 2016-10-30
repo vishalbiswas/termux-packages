@@ -1,0 +1,24 @@
+--- ./src/pacman/pacman.c	2016-01-04 08:57:45.000000000 +0530
++++ ./src/pacman/pacman.c	2016-10-22 09:55:41.535791438 +0530
+@@ -1175,7 +1175,7 @@
+ 			} while(c != EOF);
+ 
+ 			free(line);
+-			if(!freopen(ctermid(NULL), "r", stdin)) {
++			if(!freopen("/dev/tty", "r", stdin)) { // HACK termux doesn't have ctermid()
+ 				pm_printf(ALPM_LOG_ERROR, _("failed to reopen stdin for reading: (%s)\n"),
+ 						strerror(errno));
+ 			}
+@@ -1213,9 +1213,9 @@
+ 		config->logmask &= ~ALPM_LOG_WARNING;
+ 	}
+ 
+-	/* check if we have sufficient permission for the requested operation */
+-	if(myuid > 0 && needs_root()) {
+-		pm_printf(ALPM_LOG_ERROR, _("you cannot perform this operation unless you are root.\n"));
++	/* prevent root from using transaction operations as a safeguard */
++	if(myuid == 0 && !needs_root()) {
++		pm_printf(ALPM_LOG_ERROR, _("you cannot perform this operation if you are root.\n"));
+ 		cleanup(EXIT_FAILURE);
+ 	}
+ 
