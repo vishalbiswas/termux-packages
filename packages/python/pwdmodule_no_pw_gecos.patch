@@ -1,16 +1,12 @@
-diff -u -r ../Python-3.4.0rc1/Modules/pwdmodule.c ./Modules/pwdmodule.c
---- ../Python-3.4.0rc1/Modules/pwdmodule.c	2014-02-10 23:51:50.000000000 +0100
-+++ ./Modules/pwdmodule.c	2014-02-13 02:16:12.000000000 +0100
-@@ -72,7 +72,12 @@
-     SETS(setIndex++, p->pw_passwd);
+diff -u -r ../Python-3.6.0/Modules/pwdmodule.c ./Modules/pwdmodule.c
+--- ../Python-3.6.0/Modules/pwdmodule.c	2016-12-23 02:21:21.000000000 +0000
++++ ./Modules/pwdmodule.c	2016-12-27 04:37:26.157177253 +0000
+@@ -82,7 +82,7 @@
+ #endif
      PyStructSequence_SET_ITEM(v, setIndex++, _PyLong_FromUid(p->pw_uid));
      PyStructSequence_SET_ITEM(v, setIndex++, _PyLong_FromGid(p->pw_gid));
-+#ifdef __ANDROID__
-+    SETS(setIndex++, Py_None);
-+    Py_INCREF(Py_None);
-+#else
+-#if defined(HAVE_STRUCT_PASSWD_PW_GECOS)
++#if defined(HAVE_STRUCT_PASSWD_PW_GECOS) && !defined(__ANDROID__)
      SETS(setIndex++, p->pw_gecos);
-+#endif
-     SETS(setIndex++, p->pw_dir);
-     SETS(setIndex++, p->pw_shell);
- 
+ #else
+     SETS(setIndex++, "");
