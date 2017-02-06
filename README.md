@@ -44,6 +44,29 @@ will launch the docker container, execute the `./build-package.sh libandroid-sup
 command inside it and afterwards return you to the host prompt, with the newly built
 deb in `debs/` to try out.
 
+Build environment on Android (Termux)
+============================
+On device builds can be done by using [build-on-device.sh](build-on-device.sh)
+The prefix is set to $PREFIX/local here to prevent interference with termux itself. So packages created with this will install to $PREFIX/local
+by default. You'll need to append this path to `PATH` and `LD_LIBRARY_PATH` to be able to use the packages created.
+
+    export PATH=$PREFIX/local/bin:$PATH
+    export LD_LIBRARY_PATH=$PREFIX/local/lib:$LD_LIBRARY_PATH
+
+This type of build is pretty limiting. It will only build for your arch (doesn't support `-a` option). Hostbuild are not done, so packages that
+require hostbuild may not compile. Also, any packages that rely on the NDK or SDK directly will fail to build (e.g. libandroid-support).
+Due to this most packages will fail dependency resolved builds as they'll resolve to libandroid-support. You'll want to use skip depcheck by
+specifying the `-s` option in this case. To setup build environment on your device, run
+
+    ./scripts/setup-on-device.sh
+
+This will install packages required to build correctly. It is recommended to use termux-chroot as many packages have hardcoded shell and
+executable paths to `/bin/sh`, etc. Don't use root to run any of these scripts. You may wan't to export `TERMUX_MAKE_PROCESSES` to a
+suitable value for your processor. You can specify it in `$HOME/.termuxrc`. Do not try to run [clean.sh](clean.sh). To clean generated folders,
+delete them manually like:
+
+    rm -rf $PREFIX/local $HOME/.termux-build
+
 Building a package
 ==================
 The basic build operation is to run `./build-package.sh $PKG`, which:
