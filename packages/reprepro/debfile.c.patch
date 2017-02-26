@@ -1,0 +1,27 @@
+--- ./debfile.c	2016-12-24 05:41:30.000000000 +0530
++++ ../debfile.c	2017-02-26 08:43:34.850031021 +0530
+@@ -131,7 +131,7 @@
+ 			ar_archivemember_close);
+ 	if (a != ARCHIVE_OK) {
+ 		fprintf(stderr,
+-"open control.tar.gz within '%s' failed: %d:%d:%s\n",
++"open control.tar.xz within '%s' failed: %d:%d:%s\n",
+ 				debfile,
+ 				a, archive_errno(tar),
+ 				archive_error_string(tar));
+@@ -160,13 +160,13 @@
+ 	}
+ 	if (a != ARCHIVE_EOF) {
+ 		int e = archive_errno(tar);
+-		printf("Error reading control.tar.gz from %s: %d=%s\n",
++		printf("Error reading control.tar.xz from %s: %d=%s\n",
+ 				debfile,
+ 				e, archive_error_string(tar));
+ 		return (e!=0)?(RET_ERRNO(e)):RET_ERROR;
+ 	}
+ 	fprintf(stderr,
+-"Could not find a control file within control.tar.gz within '%s'!\n",
++"Could not find a control file within control.tar.xz within '%s'!\n",
+ 			debfile);
+ 	return RET_ERROR_MISSING;
+ }
