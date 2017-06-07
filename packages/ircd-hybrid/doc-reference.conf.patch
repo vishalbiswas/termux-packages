@@ -1,0 +1,85 @@
+--- ./doc/reference.conf	2017-03-26 21:07:51.000000000 +0530
++++ ../reference.conf	2017-06-07 09:50:23.439225305 +0530
+@@ -41,7 +41,7 @@
+ 	/*
+ 	 * name: the name of this server. This cannot be changed at runtime.
+ 	 */
+-	name = "server.example.net";
++	name = "localhost.termux";
+ 
+ 	/*
+ 	 * sid: a server's unique ID. This is three characters long and must
+@@ -77,13 +77,13 @@
+ 	 * vhost: the IP address to bind to when connecting outward to IPv4 servers.
+ 	 * This should be an IPv4 address, or "*" for INADDR_ANY.
+ 	 */
+-#	vhost = "192.0.2.1";
++	vhost = "127.0.0.1";
+ 
+ 	/*
+ 	 * vhost6: the IP address to bind to when connecting outward to IPv6 servers.
+ 	 * This should be an IPv6 address, or "*" for in6addr_any.
+ 	 */
+-#	vhost6 = "2001:DB8::1";
++	vhost6 = "::1";
+ 
+ 	/*
+ 	 * default_max_clients: the default maximum number of clients allowed
+@@ -1399,49 +1399,49 @@
+ 
+ 	file {
+ 		type = oper;
+-		name = "var/log/oper.log";
++		name = "var/log/ircd/oper.log";
+ 		size = unlimited;
+ 	};
+ 
+ 	file {
+ 		type = user;
+-		name = "var/log/user.log";
++		name = "var/log/ircd/user.log";
+ 		size = 50 megabytes;
+ 	};
+ 
+ 	file {
+ 		type = kill;
+-		name = "var/log/kill.log";
++		name = "var/log/ircd/kill.log";
+ 		size = 50 megabytes;
+ 	};
+ 
+ 	file {
+ 		type = kline;
+-		name = "var/log/kline.log";
++		name = "var/log/ircd/kline.log";
+ 		size = 50 megabytes;
+ 	};
+ 
+ 	file {
+ 		type = dline;
+-		name = "var/log/dline.log";
++		name = "var/log/ircd/dline.log";
+ 		size = 50 megabytes;
+ 	};
+ 
+ 	file {
+ 		type = xline;
+-		name = "var/log/xline.log";
++		name = "var/log/ircd/xline.log";
+ 		size = 50 megabytes;
+ 	};
+ 
+ 	file {
+ 		type = resv;
+-		name = "var/log/resv.log";
++		name = "var/log/ircd/resv.log";
+ 		size = 50 megabytes;
+ 	};
+ 
+ 	file {
+ 		type = debug;
+-		name = "var/log/debug.log";
++		name = "var/log/ircd/debug.log";
+ 		size = 50 megabytes;
+ 	};
+ };

@@ -1,0 +1,11 @@
+--- ./src/fdlist.c	2017-03-26 21:07:51.000000000 +0530
++++ ../fdlist.c	2017-06-07 09:05:42.213200844 +0530
+@@ -56,7 +56,7 @@
+     setrlimit(RLIMIT_NOFILE, &limit);
+   }
+ 
+-  fdmax = getdtablesize();
++  fdmax = sysconf(_SC_OPEN_MAX);
+ 
+   /* allow MAXCLIENTS_MIN clients even at the cost of MAX_BUFFER and
+    * some not really LEAKED_FDS */

@@ -1,0 +1,11 @@
+--- ./include/defaults.h	2017-03-26 21:07:50.000000000 +0530
++++ ../defaults.h	2017-06-07 10:28:44.440274599 +0530
+@@ -56,7 +56,7 @@
+ #define AUTOMODPATH  MODPATH "/autoload/"
+ #define ETCPATH      SYSCONFDIR
+ #define LIBPATH      LOCALSTATEDIR "/lib"
+-#define LOGPATH      LOCALSTATEDIR "/log"
++#define LOGPATH      LOCALSTATEDIR "/log/ircd"
+ #define RUNPATH      LOCALSTATEDIR "/run"
+ 
+ /* files */

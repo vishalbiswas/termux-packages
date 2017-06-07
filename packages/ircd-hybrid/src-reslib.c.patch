@@ -1,0 +1,11 @@
+--- ./src/reslib.c	2017-03-26 21:07:50.000000000 +0530
++++ ../reslib.c	2017-06-07 10:31:35.324219055 +0530
+@@ -177,7 +177,7 @@
+   /* XXX "/etc/resolv.conf" should be from a define in config.h perhaps
+    * for cygwin support etc. this hardcodes it to unix for now -db
+    */
+-  if ((file = fopen("/etc/resolv.conf", "r")) == NULL)
++  if ((file = fopen("@TERMUX_PREFIX@/etc/resolv.conf", "r")) == NULL)
+     return;
+ 
+   while (fgets(input, sizeof(input), file))
