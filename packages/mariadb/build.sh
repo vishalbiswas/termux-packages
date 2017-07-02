@@ -1,23 +1,28 @@
 TERMUX_PKG_HOMEPAGE=https://mariadb.org
 TERMUX_PKG_DESCRIPTION="A drop-in replacement for mysql server"
-TERMUX_PKG_VERSION=10.1.23
-TERMUX_PKG_SRCURL=http://mirror.fibergrid.in/mariadb/mariadb-$TERMUX_PKG_VERSION/source/mariadb-$TERMUX_PKG_VERSION.tar.gz
-TERMUX_PKG_SHA256=54d8114e24bfa5e3ebdc7d69e071ad1471912847ea481b227d204f9d644300bf
+TERMUX_PKG_VERSION=10.2.6
+TERMUX_PKG_REVISION=1
+TERMUX_PKG_SRCURL=https://ftp.osuosl.org/pub/mariadb/mariadb-$TERMUX_PKG_VERSION/source/mariadb-$TERMUX_PKG_VERSION.tar.gz
+TERMUX_PKG_SHA256=c385c76e40d6e5f0577eba021805da5f494a30c9ef51884baefe206d5658a2e5
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 -DBISON_EXECUTABLE=`which bison`
 -DBUILD_CONFIG=mysql_release
 -DCAT_EXECUTABLE=`which cat`
+-DGSSAPI_FOUND=NO
 -DENABLED_LOCAL_INFILE=ON
 -DHAVE_UCONTEXT_H=False
 -DIMPORT_EXECUTABLES=$TERMUX_PKG_HOSTBUILD_DIR/import_executables.cmake
 -DINSTALL_LAYOUT=DEB
 -DINSTALL_UNIX_ADDRDIR=$TERMUX_PREFIX/tmp/mysqld.sock
+-DINSTALL_SBINDIR=$TERMUX_PREFIX/bin
 -DMYSQL_DATADIR=$TERMUX_PREFIX/var/lib/mysql
 -DPLUGIN_AUTH_GSSAPI_CLIENT=NO
 -DPLUGIN_AUTH_GSSAPI=NO
+-DPLUGIN_CONNECT=NO
 -DPLUGIN_DAEMON_EXAMPLE=NO
 -DPLUGIN_EXAMPLE=NO
 -DPLUGIN_GSSAPI=NO
+-DPLUGIN_ROCKSDB=NO
 -DPLUGIN_TOKUDB=NO
 -DSTACK_DIRECTION=-1
 -DTMPDIR=$TERMUX_PREFIX/tmp
@@ -41,19 +46,13 @@ TERMUX_PKG_DEPENDS="liblzma, ncurses, libedit, openssl, pcre, libcrypt, libandro
 TERMUX_PKG_MAINTAINER="Vishal Biswas @vishalbiswas"
 TERMUX_PKG_CONFLICTS="mysql"
 TERMUX_PKG_RM_AFTER_INSTALL="bin/mysqltest*"
-# MariaDB doesn't support 32-bit off_t systems, see
-# https://bugs.mysql.com/bug.php?id=41309
-# It builds with -D_FILE_OFFSET_BITS=64 but the NDK only starts supporting
-# that with unified headers,
-# https://android.googlesource.com/platform/ndk/+/master/docs/UnifiedHeaders.md
-# The unified headers are new in the current NDK r14 release and contains some
-# issues which are being fixed for r15, at which time we'll probably switch to it.
-# In the meantime we don't build mariadb for 32-bit arches.
-TERMUX_PKG_BLACKLISTED_ARCHES="arm,i686"
 
 termux_step_host_build () {
 	termux_setup_cmake
-	cmake -G "Unix Makefiles" $TERMUX_PKG_SRCDIR -DCMAKE_BUILD_TYPE=Release
+	cmake -G "Unix Makefiles" \
+		$TERMUX_PKG_SRCDIR \
+		-DWITH_SSL=bundled \
+		-DCMAKE_BUILD_TYPE=Release
 	make -j $TERMUX_MAKE_PROCESSES import_executables
 }
 
@@ -61,6 +60,11 @@ termux_step_pre_configure () {
 	# it will try to define off64_t with off_t if unset
 	# and 32 bit Android has wrong off_t defined
 	CPPFLAGS="$CPPFLAGS -Dushort=u_short -D__off64_t_defined"
+
+	if [ $TERMUX_ARCH = "i686" ]; then
+		# Avoid undefined reference to __atomic_load_8:
+		LDFLAGS+=" -latomic"
+	fi
 }
 
 termux_step_post_make_install () {

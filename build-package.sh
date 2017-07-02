@@ -186,7 +186,7 @@ termux_step_setup_variables() {
 	: "${TERMUX_DEBUG:=""}"
 	: "${TERMUX_API_LEVEL:="21"}"
 	: "${TERMUX_ANDROID_BUILD_TOOLS_VERSION:="25.0.3"}"
-	: "${TERMUX_NDK_VERSION:="14"}"
+	: "${TERMUX_NDK_VERSION:="15.1"}"
 
 	if [ "x86_64" = "$TERMUX_ARCH" ] || [ "aarch64" = "$TERMUX_ARCH" ]; then
 		TERMUX_ARCH_BITS=64
@@ -218,14 +218,13 @@ termux_step_setup_variables() {
 	TERMUX_DEBDIR="$TERMUX_SCRIPTDIR/debs"
 	TERMUX_ELF_CLEANER=$TERMUX_COMMON_CACHEDIR/termux-elf-cleaner
 
-	TERMUX_STANDALONE_TOOLCHAIN="$TERMUX_TOPDIR/_lib/toolchain-${TERMUX_ARCH}-ndk${TERMUX_NDK_VERSION}-api${TERMUX_API_LEVEL}"
+	TERMUX_STANDALONE_TOOLCHAIN="$TERMUX_TOPDIR/_lib/${TERMUX_NDK_VERSION}-${TERMUX_ARCH}-${TERMUX_API_LEVEL}"
 	# Bump the below version if a change is made in toolchain setup to ensure
 	# that everyone gets an updated toolchain:
-	TERMUX_STANDALONE_TOOLCHAIN+="-v17"
+	TERMUX_STANDALONE_TOOLCHAIN+="-v4"
 
 	export prefix=${TERMUX_PREFIX}
 	export PREFIX=${TERMUX_PREFIX}
-	export PKG_CONFIG_LIBDIR=$TERMUX_PREFIX/lib/pkgconfig
 
 	TERMUX_PKG_BUILDDIR=$TERMUX_TOPDIR/$TERMUX_PKG_NAME/build
 	TERMUX_PKG_CACHEDIR=$TERMUX_TOPDIR/$TERMUX_PKG_NAME/cache
@@ -279,7 +278,9 @@ termux_step_handle_buildarch() {
 			if test -e "$TERMUX_DATA_PREVIOUS_BACKUPDIR"; then
 				termux_error_exit "Directory already exists"
 			fi
-			mv /data/data "$TERMUX_DATA_PREVIOUS_BACKUPDIR"
+			if [ -d /data/data ]; then
+				mv /data/data "$TERMUX_DATA_PREVIOUS_BACKUPDIR"
+			fi
 			# Restore new one (if any)
 			if [ -d "$TERMUX_DATA_CURRENT_BACKUPDIR" ]; then
 				mv "$TERMUX_DATA_CURRENT_BACKUPDIR" /data/data
@@ -342,7 +343,6 @@ termux_step_start_build() {
 		 "$TERMUX_PKG_TMPDIR" \
 		 "$TERMUX_PKG_CACHEDIR" \
 		 "$TERMUX_PKG_MASSAGEDIR" \
-		 $PKG_CONFIG_LIBDIR \
 		 $TERMUX_PREFIX/{bin,etc,lib,libexec,share,tmp,include}
 
 	# Make $TERMUX_PREFIX/bin/sh executable on the builder, so that build
@@ -367,8 +367,11 @@ termux_step_start_build() {
 	echo "termux - building $TERMUX_PKG_NAME for arch $TERMUX_ARCH..."
 	test -t 1 && printf "\033]0;%s...\007" "$TERMUX_PKG_NAME"
 
-	# Add a pkg-config file for the system zlib
-	cat > "$PKG_CONFIG_LIBDIR/zlib.pc" <<-HERE
+	# Avoid exporting PKG_CONFIG_LIBDIR until after termux_step_host_build.
+	export TERMUX_PKG_CONFIG_LIBDIR=$TERMUX_PREFIX/lib/pkgconfig
+	# Add a pkg-config file for the system zlib.
+	mkdir -p "$TERMUX_PKG_CONFIG_LIBDIR"
+	cat > "$TERMUX_PKG_CONFIG_LIBDIR/zlib.pc" <<-HERE
 		Name: zlib
 		Description: zlib compression library
 		Version: 1.2.8
@@ -541,7 +544,7 @@ termux_step_setup_toolchain() {
 					termux_error_exit "No toolchain file to override: $FILE_TO_REPLACE"
 				fi
 				cp "$TERMUX_SCRIPTDIR/scripts/clang-pie-wrapper" $FILE_TO_REPLACE
-				sed -i "s/COMPILER/clang38$plusplus/" $FILE_TO_REPLACE
+				sed -i "s/COMPILER/clang50$plusplus/" $FILE_TO_REPLACE
 				sed -i "s/CLANG_TARGET/$CLANG_TARGET/" $FILE_TO_REPLACE
 			done
 		done
@@ -560,7 +563,7 @@ termux_step_setup_toolchain() {
 
 		cd $_TERMUX_TOOLCHAIN_TMPDIR/sysroot
 
-		for f in $TERMUX_SCRIPTDIR/ndk_patches/*.patch; do
+		for f in $TERMUX_SCRIPTDIR/ndk-patches/*.patch; do
 			sed "s%\@TERMUX_PREFIX\@%${TERMUX_PREFIX}%g" "$f" | \
 				sed "s%\@TERMUX_HOME\@%${TERMUX_ANDROID_HOME}%g" | \
 				patch --silent -p1;
@@ -568,11 +571,14 @@ termux_step_setup_toolchain() {
 		# elf.h: Taken from glibc since the elf.h in the NDK is lacking.
 		# sysexits.h: Header-only and used by a few programs.
 		# ifaddrs.h: Added in android-24 unified headers, use a inline implementation for now.
-		cp "$TERMUX_SCRIPTDIR"/ndk_patches/{elf.h,sysexits.h,ifaddrs.h} $_TERMUX_TOOLCHAIN_TMPDIR/sysroot/usr/include
+		cp "$TERMUX_SCRIPTDIR"/ndk-patches/{elf.h,sysexits.h,ifaddrs.h} usr/include
 
 		# Remove <sys/shm.h> from the NDK in favour of that from the libandroid-shmem.
 		# Also remove <sys/sem.h> as it doesn't work for non-root.
-		rm $_TERMUX_TOOLCHAIN_TMPDIR/sysroot/usr/include/sys/{shm.h,sem.h}
+		rm usr/include/sys/{shm.h,sem.h}
+
+		sed -i "s/define __ANDROID_API__ __ANDROID_API_FUTURE__/define __ANDROID_API__ $TERMUX_API_LEVEL/" \
+			usr/include/android/api-level.h
 
 		local _LIBDIR=usr/lib
 		if [ $TERMUX_ARCH = x86_64 ]; then _LIBDIR+=64; fi
@@ -581,7 +587,7 @@ termux_step_setup_toolchain() {
 		# zlib is really version 1.2.8 in the Android platform (at least
 		# starting from Android 5), not older as the NDK headers claim.
 		for file in zconf.h zlib.h; do
-			curl -o $_TERMUX_TOOLCHAIN_TMPDIR/sysroot/usr/include/$file \
+			curl -o usr/include/$file \
 			        https://raw.githubusercontent.com/madler/zlib/v1.2.8/$file
 		done
 		unset file
@@ -612,6 +618,7 @@ termux_step_setup_toolchain() {
 		ln -f -s libgnustl_shared.so libstdc++.so
 	fi
 
+	export PKG_CONFIG_LIBDIR="$TERMUX_PKG_CONFIG_LIBDIR"
 	# Create a pkg-config wrapper. We use path to host pkg-config to
 	# avoid picking up a cross-compiled pkg-config later on.
 	local _HOST_PKGCONFIG
@@ -691,6 +698,9 @@ termux_step_configure_autotools () {
 	# https://gitlab.com/sortix/sortix/wikis/Gnulib
 	# https://github.com/termux/termux-packages/issues/76
 	local AVOID_GNULIB=""
+	AVOID_GNULIB+=" ac_cv_func_calloc_0_nonnull=yes"
+	AVOID_GNULIB+=" ac_cv_func_chown_works=yes"
+	AVOID_GNULIB+=" ac_cv_func_getgroups_works=yes"
 	AVOID_GNULIB+=" ac_cv_func_malloc_0_nonnull=yes"
 	AVOID_GNULIB+=" ac_cv_func_realloc_0_nonnull=yes"
 	AVOID_GNULIB+=" am_cv_func_working_getline=yes"
@@ -710,6 +720,8 @@ termux_step_configure_autotools () {
 	AVOID_GNULIB+=" gl_cv_func_memchr_works=yes"
 	AVOID_GNULIB+=" gl_cv_func_mkdir_trailing_dot_works=yes"
 	AVOID_GNULIB+=" gl_cv_func_mkdir_trailing_slash_works=yes"
+	AVOID_GNULIB+=" gl_cv_func_mkfifo_works=yes"
+	AVOID_GNULIB+=" gl_cv_func_realpath_works=yes"
 	AVOID_GNULIB+=" gl_cv_func_select_detects_ebadf=yes"
 	AVOID_GNULIB+=" gl_cv_func_snprintf_posix=yes"
 	AVOID_GNULIB+=" gl_cv_func_snprintf_retval_c99=yes"
@@ -729,6 +741,7 @@ termux_step_configure_autotools () {
 	AVOID_GNULIB+=" gl_cv_func_working_mktime=yes"
 	AVOID_GNULIB+=" gl_cv_func_working_strerror=yes"
 	AVOID_GNULIB+=" gl_cv_header_working_fcntl_h=yes"
+	AVOID_GNULIB+=" gl_cv_C_locale_sans_EILSEQ=yes"
 
 	# NOTE: We do not want to quote AVOID_GNULIB as we want word expansion.
 	env $AVOID_GNULIB "$TERMUX_PKG_SRCDIR/configure" \
