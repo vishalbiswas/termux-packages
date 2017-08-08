@@ -12,6 +12,9 @@ termux_step_make_install() {
 	rm $TERMUX_PREFIX/lib/libboost* -f
 	rm $TERMUX_PREFIX/include/boost -rf
 
+	variant=release
+	test -n "$TERMUX_DEBUG" && variant=debug
+
 	./bootstrap.sh
 
 	echo "using clang : $TERMUX_ARCH : $CXX : <linkflags>-L/data/data/com.termux/files/usr/lib ; " >> project-config.jam
@@ -30,5 +33,6 @@ termux_step_make_install() {
 		cxxflags="$CXXFLAGS" \
 		link=shared \
 		threading=multi \
+		variant=$variant \
 		install
 }
