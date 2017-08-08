@@ -1,0 +1,11 @@
+--- ./src/mongo/db/storage/storage_options.h	2017-03-18 03:27:20.000000000 +0530
++++ ../storage_options.h	2017-08-04 09:44:04.183427774 +0530
+@@ -52,7 +52,7 @@
+ 
+     // --storageEngine
+     // storage engine for this instance of mongod.
+-    std::string engine = "wiredTiger";
++    std::string engine = "mmapv1";
+ 
+     // True if --storageEngine was passed on the command line, and false otherwise.
+     bool engineSetByUser = false;

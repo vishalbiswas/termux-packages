@@ -1,0 +1,14 @@
+--- ./src/mongo/db/query/collation/collator_interface_icu.h	2017-03-18 03:27:20.000000000 +0530
++++ ../collator_interface_icu.h	2017-08-02 22:40:22.697591832 +0530
+@@ -32,10 +32,7 @@
+ 
+ #include <memory>
+ 
+-namespace icu {
+-class Collator;
+-}  // namespace icu
+-
++#include <unicode/coll.h>
+ namespace mongo {
+ 
+ /**

@@ -1,0 +1,10 @@
+--- ./src/mongo/db/storage/mmap_v1/mmap_v1_engine.cpp	2017-03-18 03:27:20.000000000 +0530
++++ ../mmap_v1_engine.cpp	2017-08-02 09:29:47.054629419 +0530
+@@ -35,6 +35,7 @@
+ #include <boost/filesystem/operations.hpp>
+ #include <boost/filesystem/path.hpp>
+ #include <fstream>
++#include <sys/sysmacros.h>
+ 
+ #include "mongo/db/mongod_options.h"
+ #include "mongo/db/storage/mmap_v1/data_file_sync.h"

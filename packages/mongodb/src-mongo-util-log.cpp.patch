@@ -1,0 +1,11 @@
+--- ./src/mongo/util/log.cpp	2017-03-18 03:27:20.000000000 +0530
++++ ../log.cpp	2017-08-01 08:28:51.387599866 +0530
+@@ -101,7 +101,7 @@
+     char buf[kBuflen];
+     char* msg{nullptr};
+ 
+-#if defined(__GNUC__) && defined(_GNU_SOURCE)
++#if defined(__GNUC__) && defined(_GNU_SOURCE) && !defined(__ANDROID__)
+     msg = strerror_r(errNumber, buf, kBuflen);
+ #elif defined(_WIN32)
+ 

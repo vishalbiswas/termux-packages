@@ -1,0 +1,13 @@
+--- ./src/mongo/platform/overflow_arithmetic.h	2017-03-18 03:27:20.000000000 +0530
++++ ../overflow_arithmetic.h	2017-08-02 23:53:55.432063785 +0530
+@@ -97,6 +97,10 @@
+ 
+ // On GCC and CLANG we can use __builtin functions to perform these calculations.
+ 
++#if defined(__arm__) && !defined(__aarch64__)
++#define __builtin_smulll_overflow(x,y,p) (*(p)=(x)*(y), false)
++#endif
++
+ inline bool mongoSignedMultiplyOverflow64(long lhs, long rhs, long* product) {
+     return __builtin_smull_overflow(lhs, rhs, product);
+ }

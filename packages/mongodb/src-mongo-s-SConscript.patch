@@ -1,0 +1,9 @@
+--- ./src/mongo/s/SConscript	2017-03-18 03:27:20.000000000 +0530
++++ ../SConscript	2017-08-03 00:16:30.131935972 +0530
+@@ -328,5 +328,6 @@
+         "$BUILD_DIR/mongo/db/s/sharding",
+         "$BUILD_DIR/mongo/executor/network_interface_factory",
+         "$BUILD_DIR/mongo/s/client/shard_local",
++        "$BUILD_DIR/mongo/s/local_sharding_info",
+     ],
+ )

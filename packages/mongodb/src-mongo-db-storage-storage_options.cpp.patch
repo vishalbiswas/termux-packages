@@ -1,0 +1,13 @@
+--- ./src/mongo/db/storage/storage_options.cpp	2017-03-18 03:27:20.000000000 +0530
++++ ../storage_options.cpp	2017-08-04 09:24:09.069394490 +0530
+@@ -44,8 +44,8 @@
+ const char* StorageGlobalParams::kDefaultDbPath = "\\data\\db\\";
+ const char* StorageGlobalParams::kDefaultConfigDbPath = "\\data\\configdb\\";
+ #else
+-const char* StorageGlobalParams::kDefaultDbPath = "/data/db";
+-const char* StorageGlobalParams::kDefaultConfigDbPath = "/data/configdb";
++const char* StorageGlobalParams::kDefaultDbPath = "@TERMUX_PREFIX@/var/lib/mongodb/db";
++const char* StorageGlobalParams::kDefaultConfigDbPath = "@TERMUX_PREFIX@/var/lib/mongodb/configdb";
+ #endif
+ 
+ const int StorageGlobalParams::kMaxJournalCommitIntervalMs = 500;

@@ -1,0 +1,30 @@
+--- ./src/mongo/bson/bsonobjbuilder.h	2017-08-02 10:07:27.097576245 +0530
++++ ../bsonobjbuilder.h	2017-08-02 10:09:20.980219970 +0530
+@@ -299,6 +299,10 @@
+         return append(fieldName, n);
+     }
+ 
++    BSONObjBuilder& appendNumber(StringData fieldName, uint64_t n) {
++        return append(fieldName, n);
++    }
++
+     BSONObjBuilder& appendNumber(StringData fieldName, double d) {
+         return append(fieldName, d);
+     }
+--- ./src/mongo/bson/bsonobjbuilder.h	2017-08-02 10:09:53.476689858 +0530
++++ ../bsonobjbuilder.h	2017-08-02 10:15:28.424661609 +0530
+@@ -243,6 +243,14 @@
+         return *this;
+     }
+ 
++    /** Append a unsigned long long element */
++    BSONObjBuilder& append(StringData fieldName, uint64_t n) {
++        _b.appendNum((char)NumberInt);
++        _b.appendStr(fieldName);
++        _b.appendNum(n);
++        return *this;
++    }
++
+     /** Append a 32 bit unsigned element - cast to a signed int. */
+     BSONObjBuilder& append(StringData fieldName, unsigned n) {
+         return append(fieldName, (int)n);

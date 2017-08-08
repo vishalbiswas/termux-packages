@@ -1,0 +1,11 @@
+--- ./src/third_party/mozjs-45/include/js/Conversions.h	2017-03-18 03:27:20.000000000 +0530
++++ ../Conversions.h	2017-08-03 21:58:24.098553592 +0530
+@@ -385,7 +385,7 @@
+ {
+     // clang crashes compiling this when targeting arm-darwin:
+     // https://llvm.org/bugs/show_bug.cgi?id=22974
+-#if defined (__arm__) && defined (__GNUC__) && !defined(__APPLE__)
++#if defined (__arm__) && defined (__GNUC__) && !defined(__APPLE__) && !defined(__ANDROID__)
+     int32_t i;
+     uint32_t    tmp0;
+     uint32_t    tmp1;

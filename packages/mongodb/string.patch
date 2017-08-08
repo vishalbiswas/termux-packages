@@ -1,0 +1,52 @@
+--- ./src/mongo/db/dbwebserver.cpp	2017-03-18 03:27:20.000000000 +0530
++++ ../dbwebserver.cpp	2017-08-02 21:16:29.323206667 +0530
+@@ -62,6 +62,8 @@
+ #include "mongo/util/ramlog.h"
+ #include "mongo/util/version.h"
+ 
++using std::string;
++
+ namespace mongo {
+ 
+ using std::map;
+--- ./src/mongo/db/matcher/expression_leaf.cpp	2017-03-18 03:27:20.000000000 +0530
++++ ../expression_leaf.cpp	2017-08-02 21:27:46.948029018 +0530
+@@ -44,6 +44,8 @@
+ #include "mongo/stdx/memory.h"
+ #include "mongo/util/mongoutils/str.h"
+ 
++using std::string;
++
+ namespace mongo {
+ 
+ Status LeafMatchExpression::setPath(StringData path) {
+--- ./src/mongo/db/repl/master_slave.cpp	2017-03-18 03:27:20.000000000 +0530
++++ ../master_slave.cpp	2017-08-02 21:56:14.770598085 +0530
+@@ -73,6 +73,7 @@
+ #include "mongo/util/log.h"
+ #include "mongo/util/quick_exit.h"
+ 
++using std::string;
+ using std::cout;
+ using std::endl;
+ using std::max;
+--- ./src/mongo/util/net/miniwebserver.cpp	2017-03-18 03:27:20.000000000 +0530
++++ ../miniwebserver.cpp	2017-08-02 22:14:55.334299068 +0530
+@@ -44,6 +44,7 @@
+ 
+ namespace mongo {
+ 
++using std::string;
+ using std::shared_ptr;
+ using std::stringstream;
+ using std::vector;
+--- ./src/mongo/shell/bench.cpp	2017-03-18 03:27:20.000000000 +0530
++++ ../bench.cpp	2017-08-03 11:15:19.471754797 +0530
+@@ -75,6 +75,7 @@
+ 
+ namespace mongo {
+ 
++using std::string;
+ using std::unique_ptr;
+ using std::cout;
+ using std::map;

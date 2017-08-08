@@ -1,0 +1,11 @@
+--- ./src/mongo/db/server_options.h	2017-03-18 03:27:20.000000000 +0530
++++ ../server_options.h	2017-08-04 09:26:21.247014687 +0530
+@@ -69,7 +69,7 @@
+ 
+     bool noUnixSocket = false;    // --nounixsocket
+     bool doFork = false;          // --fork
+-    std::string socket = "/tmp";  // UNIX domain socket directory
++    std::string socket = "@TERMUX_PREFIX@/tmp";  // UNIX domain socket directory
+ 
+     int maxConns = DEFAULT_MAX_CONN;  // Maximum number of simultaneous open connections.
+ 

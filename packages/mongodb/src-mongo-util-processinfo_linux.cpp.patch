@@ -1,0 +1,22 @@
+--- ./src/mongo/util/processinfo_linux.cpp	2017-03-18 03:27:20.000000000 +0530
++++ ../processinfo_linux.cpp	2017-08-02 10:24:09.188174842 +0530
+@@ -40,7 +40,7 @@
+ #include <sys/mman.h>
+ #include <sys/utsname.h>
+ #include <unistd.h>
+-#ifdef __UCLIBC__
++#ifdef __ANDROID__
+ #include <features.h>
+ #else
+ #include <gnu/libc-version.h>
+--- ./src/mongo/util/processinfo_linux.cpp	2017-08-02 10:24:42.194641642 +0530
++++ ../processinfo_linux.cpp	2017-08-02 10:36:01.503861482 +0530
+@@ -491,6 +491,8 @@
+     stringstream ss;
+     ss << "uClibc-" << __UCLIBC_MAJOR__ << "." << __UCLIBC_MINOR__ << "." << __UCLIBC_SUBLEVEL__;
+     bExtra.append("libcVersion", ss.str());
++#elif defined(__ANDROID__)
++    bExtra.append("libcVersion", "LIBC");
+ #else
+     bExtra.append("libcVersion", gnu_get_libc_version());
+ #endif

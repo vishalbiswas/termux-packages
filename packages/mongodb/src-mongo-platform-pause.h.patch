@@ -1,0 +1,11 @@
+--- ./src/mongo/platform/pause.h	2017-03-18 03:27:20.000000000 +0530
++++ ../pause.h	2017-08-02 09:45:13.255654106 +0530
+@@ -55,7 +55,7 @@
+ /* ori 0,0,0 is the PPC64 noop instruction */
+ #define MONGO_YIELD_CORE_FOR_SMT() __asm__ volatile("ori 0,0,0" ::: "memory")
+ 
+-#elif defined(__aarch64__)
++#elif defined(__aarch64__) || defined(__arm__)
+ 
+ #define MONGO_YIELD_CORE_FOR_SMT() __asm__ volatile("yield" ::: "memory")
+ 
