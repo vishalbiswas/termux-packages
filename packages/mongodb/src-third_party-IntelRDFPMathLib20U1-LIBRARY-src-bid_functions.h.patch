@@ -1,0 +1,11 @@
+--- ./src/third_party/IntelRDFPMathLib20U1/LIBRARY/src/bid_functions.h	2017-06-28 00:32:43.000000000 +0530
++++ ../bid_functions.h	2017-08-08 15:40:28.063384722 +0530
+@@ -162,7 +162,7 @@
+ #ifdef __QNX__
+ #include <fenv.h>
+ #else
+-typedef unsigned short int fexcept_t;
++typedef unsigned int fexcept_t;
+ #endif
+ #endif
+ #endif
