@@ -1,0 +1,10 @@
+--- ./src/mongo/db/storage/mmap_v1/logfile.cpp	2017-06-28 00:32:43.000000000 +0530
++++ ../logfile.cpp	2017-08-08 16:43:43.676508894 +0530
+@@ -199,7 +199,6 @@
+ void LogFile::truncate() {
+     verify(_fd >= 0);
+ 
+-    MONGO_STATIC_ASSERT(sizeof(off_t) == 8);    // we don't want overflow here
+     const off_t pos = lseek(_fd, 0, SEEK_CUR);  // doesn't actually seek
+     if (ftruncate(_fd, pos) != 0) {
+         msgasserted(15873, "Couldn't truncate file: " + errnoWithDescription());

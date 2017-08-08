@@ -1,3 +1,5 @@
+# Note: don't let the logfile reach >2GB on 32-bits as our off_t is 32-bits
+# should probably add a warning on postinst
 TERMUX_PKG_HOMEPAGE=https://www.mongodb.com
 TERMUX_PKG_DESCRIPTION="A high-performance, open source, schema-free document-oriented database"
 TERMUX_PKG_VERSION=3.4.6
@@ -8,7 +10,7 @@ TERMUX_PKG_MAINTAINER="Vishal Biswas @vishalbiswas"
 TERMUX_PKG_BUILD_IN_SRC=true
 
 termux_step_pre_configure () {
-	CPPFLAGS="$CPPFLAGS -D__ELF_NATIVE_CLASS=$TERMUX_ARCH_BITS -DTERMUX_EXPOSE_FILE_OFFSET64=1"
+	CPPFLAGS="$CPPFLAGS -D__ELF_NATIVE_CLASS=$TERMUX_ARCH_BITS"
 	LDFLAGS="$LDFLAGS -llog"
 	local RELEASE="--release --opt=on"
 	test -n "$TERMUX_DEBUG" && RELEASE=""
