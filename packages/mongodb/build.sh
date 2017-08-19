@@ -10,10 +10,10 @@ TERMUX_PKG_MAINTAINER="Vishal Biswas @vishalbiswas"
 TERMUX_PKG_BUILD_IN_SRC=true
 
 termux_step_pre_configure () {
-	CPPFLAGS="$CPPFLAGS -D__ELF_NATIVE_CLASS=$TERMUX_ARCH_BITS"
+	CPPFLAGS="$CPPFLAGS -D__ELF_NATIVE_CLASS=$TERMUX_ARCH_BITS -fdeclspec"
 	LDFLAGS="$LDFLAGS -llog"
 	local RELEASE="--release --opt=on"
-	test -n "$TERMUX_DEBUG" && RELEASE=""
+	test -n "$TERMUX_DEBUG" && RELEASE="--dbg=on"
 	export _SCONS_ARGS=( --prefix=$TERMUX_PREFIX
 		$RELEASE
 		--endian=little
@@ -26,6 +26,7 @@ termux_step_pre_configure () {
 		--allocator=system
 		--wiredtiger=off
 		--mmapv1=on
+		--libc++
 		--disable-warnings-as-errors )
 }
 
