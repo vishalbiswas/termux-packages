@@ -2,9 +2,9 @@
 # should probably add a warning on postinst
 TERMUX_PKG_HOMEPAGE=https://www.mongodb.com
 TERMUX_PKG_DESCRIPTION="A high-performance, open source, schema-free document-oriented database"
-TERMUX_PKG_VERSION=3.4.6
+TERMUX_PKG_VERSION=3.4.9
 TERMUX_PKG_SRCURL=https://fastdl.mongodb.org/src/mongodb-src-r$TERMUX_PKG_VERSION.tar.gz
-TERMUX_PKG_SHA256=8170360f6dfede9c19c131f3d76831e952b3f1494925aa7e2a3a2f95b58ad901
+TERMUX_PKG_SHA256=2fd0f47a5f9175e71d3d381e81a1b6a2500c9c414dd6ae0940ad6194a0e85549
 TERMUX_PKG_DEPENDS="boost, pcre, openssl, libicu"
 TERMUX_PKG_MAINTAINER="Vishal Biswas @vishalbiswas"
 TERMUX_PKG_BUILD_IN_SRC=true
@@ -26,7 +26,6 @@ termux_step_pre_configure () {
 		--allocator=system
 		--wiredtiger=off
 		--mmapv1=on
-		--libc++
 		--disable-warnings-as-errors )
 }
 
