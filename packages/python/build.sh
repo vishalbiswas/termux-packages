@@ -3,6 +3,7 @@ TERMUX_PKG_DESCRIPTION="Python 3 programming language intended to enable clear p
 TERMUX_PKG_DEPENDS="libandroid-support, ncurses, readline, libffi, openssl, libutil, libbz2, libsqlite, gdbm, ncurses-ui-libs, libcrypt, liblzma"
 _MAJOR_VERSION=3.6
 TERMUX_PKG_VERSION=${_MAJOR_VERSION}.2
+TERMUX_PKG_REVISION=1
 TERMUX_PKG_SHA256=9229773be41ed144370f47f0f626a1579931f5a390f1e8e3853174d52edd64a9
 TERMUX_PKG_SRCURL=https://www.python.org/ftp/python/${TERMUX_PKG_VERSION}/Python-${TERMUX_PKG_VERSION}.tar.xz
 
@@ -70,7 +71,8 @@ termux_step_post_massage () {
 
 termux_step_create_debscripts () {
 	## POST INSTALL:
-	echo 'echo "Setting up pip..."' > postinst
+	echo "#!$TERMUX_PREFIX/bin/sh" > postinst
+	echo 'echo "Setting up pip..."' >> postinst
 	# Fix historical mistake which removed bin/pip but left site-packages/pip-*.dist-info,
 	# which causes ensurepip to avoid installing pip due to already existing pip install:
 	echo "if [ ! -f $TERMUX_PREFIX/bin/pip -a -d $TERMUX_PREFIX/lib/python${_MAJOR_VERSION}/site-packages/pip-*.dist-info ]; then rm -Rf $TERMUX_PREFIX/lib/python${_MAJOR_VERSION}/site-packages/pip-*.dist-info ; fi" >> postinst
@@ -78,8 +80,9 @@ termux_step_create_debscripts () {
 	echo "$TERMUX_PREFIX/bin/python -m ensurepip --upgrade --default-pip" >> postinst
 
 	## PRE RM:
-	# Avoid running on update:
-	echo 'if [ $1 != "remove" ]; then exit 0; fi' > prerm
+	# Avoid running on update
+	echo "#!$TERMUX_PREFIX/bin/sh" > prerm:
+	echo 'if [ $1 != "remove" ]; then exit 0; fi' >> prerm
 	# Uninstall everything installed through pip:
 	echo "pip freeze 2> /dev/null | xargs pip uninstall -y > /dev/null 2> /dev/null" >> prerm
 	# Cleanup __pycache__ folders:
