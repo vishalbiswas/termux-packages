@@ -1,0 +1,138 @@
+diff --git a/include/fuse_common.h b/include/fuse_common.h
+index ff78cc9..55e86e5 100644
+--- a/include/fuse_common.h
++++ b/include/fuse_common.h
+@@ -14,6 +14,8 @@
+ #ifndef FUSE_COMMON_H_
+ #define FUSE_COMMON_H_
+ 
++#define TERMUX_EXPOSE_FILE_OFFSET64
++
+ #include "fuse_opt.h"
+ #include <stdint.h>
+ #include <sys/types.h>
+diff --git a/lib/fuse.c b/lib/fuse.c
+index 75ae38a..8451a73 100644
+--- a/lib/fuse.c
++++ b/lib/fuse.c
+@@ -128,6 +128,7 @@ struct fuse {
+ 	struct list_head partial_slabs;
+ 	struct list_head full_slabs;
+ 	pthread_t prune_thread;
++	int cancel_requested;
+ };
+ 
+ struct lock {
+@@ -4659,7 +4660,9 @@ static void *fuse_prune_nodes(void *fuse)
+ 
+ 	while(1) {
+ 		sleep_time = fuse_clean_cache(f);
++		if (f->cancel_requested) pthread_exit(NULL);
+ 		sleep(sleep_time);
++		if (f->cancel_requested) pthread_exit(NULL);
+ 	}
+ 	return NULL;
+ }
+@@ -4676,7 +4679,7 @@ void fuse_stop_cleanup_thread(struct fuse *f)
+ {
+ 	if (lru_enabled(f)) {
+ 		pthread_mutex_lock(&f->lock);
+-		pthread_cancel(f->prune_thread);
++		f->cancel_requested = 1;
+ 		pthread_mutex_unlock(&f->lock);
+ 		pthread_join(f->prune_thread, NULL);
+ 	}
+diff --git a/lib/fuse_loop_mt.c b/lib/fuse_loop_mt.c
+index 904539e..bb7f08a 100644
+--- a/lib/fuse_loop_mt.c
++++ b/lib/fuse_loop_mt.c
+@@ -36,6 +36,7 @@ struct fuse_worker {
+ 	struct fuse_buf fbuf;
+ 	struct fuse_chan *ch;
+ 	struct fuse_mt *mt;
++	int cancel_requested;
+ };
+ 
+ struct fuse_mt {
+@@ -120,9 +121,10 @@ static void *fuse_do_work(void *data)
+ 		int isforget = 0;
+ 		int res;
+ 
+-		pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
++		if (w->cancel_requested) pthread_exit(NULL);
++		// implementing deferred cancel inside this is not practical
+ 		res = fuse_session_receive_buf_int(mt->se, &w->fbuf, w->ch);
+-		pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
++		if (w->cancel_requested) pthread_exit(NULL);
+ 		if (res == -EINTR)
+ 			continue;
+ 		if (res <= 0) {
+@@ -331,7 +333,7 @@ int fuse_session_loop_mt_32(struct fuse_session *se, struct fuse_loop_config *co
+ 
+ 		pthread_mutex_lock(&mt.lock);
+ 		for (w = mt.main.next; w != &mt.main; w = w->next)
+-			pthread_cancel(w->thread_id);
++			w->cancel_requested = 1;
+ 		mt.exit = 1;
+ 		pthread_mutex_unlock(&mt.lock);
+ 
+diff --git a/meson.build b/meson.build
+index 3e0a726..33e0448 100644
+--- a/meson.build
++++ b/meson.build
+@@ -92,7 +92,7 @@ thread_dep = dependency('threads')
+ #
+ # Read build files from sub-directories
+ #
+-subdirs = [ 'lib', 'include', 'example', 'doc', 'test' ]
++subdirs = [ 'lib', 'include', 'doc' ]
+ if not platform.endswith('bsd')
+   subdirs += 'util'
+ endif
+diff --git a/util/fusermount.c b/util/fusermount.c
+index 0f65435..e33f4cf 100644
+--- a/util/fusermount.c
++++ b/util/fusermount.c
+@@ -113,7 +113,7 @@ static int lock_umount(void)
+ 			progname, strerror(errno));
+ 		return -1;
+ 	}
+-	res = lockf(mtablock, F_LOCK, 0);
++	res = flock(mtablock, F_LOCK);
+ 	if (res < 0) {
+ 		fprintf(stderr, "%s: error getting lock: %s\n", progname,
+ 			strerror(errno));
+@@ -129,7 +129,7 @@ static void unlock_umount(int mtablock)
+ 	if (mtablock >= 0) {
+ 		int res;
+ 
+-		res = lockf(mtablock, F_ULOCK, 0);
++		res = flock(mtablock, F_ULOCK);
+ 		if (res < 0) {
+ 			fprintf(stderr, "%s: error releasing lock: %s\n",
+ 				progname, strerror(errno));
+diff --git a/lib/meson.build b/lib/meson.build
+index c0e96d8..f5b421b 100644
+--- a/lib/meson.build
++++ b/lib/meson.build
+@@ -3,11 +3,7 @@ libfuse_sources = ['fuse.c', 'fuse_i.h', 'fuse_loop.c', 'fuse_loop_mt.c',
+                    'fuse_signals.c', 'buffer.c', 'cuse_lowlevel.c',
+                   'helper.c', 'modules/subdir.c' ]
+ 
+-if host_machine.system().startswith('linux')
+    libfuse_sources += [ 'mount.c', 'mount_util.c' ]
+-else
+-   libfuse_sources += [ 'mount_bsd.c' ]
+-endif
+ 
+ if cfg.get('HAVE_ICONV')
+    libfuse_sources += [ 'modules/iconv.c' ]
+@@ -35,7 +31,7 @@ libfuse = library('fuse3', libfuse_sources, version: meson.project_version(),
+                               + '/fuse_versionscript' ])
+ 
+ pkg = import('pkgconfig')
+-pkg.generate(libraries: [ libfuse, '-lpthread' ],
++pkg.generate(libraries: libfuse,
+              libraries_private: '-ldl',
+              version: meson.project_version(),
+              name: 'fuse3',
