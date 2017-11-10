@@ -903,13 +903,16 @@ termux_step_configure_cmake () {
 
 termux_step_configure_meson () {
 	termux_setup_meson
+
+	local buildtype="minsize"
+	test -n "$TERMUX_DEBUG" && buildtype="debug"
 	CC=gcc CXX=g++ $TERMUX_MESON \
 		$TERMUX_PKG_SRCDIR \
 		$TERMUX_PKG_BUILDDIR \
 		--cross-file $TERMUX_MESON_CROSSFILE \
 		--prefix $TERMUX_PREFIX \
 		--libdir lib \
-		--buildtype minsize \
+		--buildtype $buildtype \
 		--strip \
 		$TERMUX_PKG_EXTRA_CONFIGURE_ARGS
 }
