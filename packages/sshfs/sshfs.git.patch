@@ -1,0 +1,22 @@
+diff --git a/meson.build b/meson.build
+index 6373fe4..7c1ca84 100644
+--- a/meson.build
++++ b/meson.build
+@@ -68,5 +68,4 @@ meson.add_install_script('utils/install_helper.sh',
+                          get_option('bindir'))
+ 
+ 
+-subdir('test')
+ 
+diff --git a/sshfs.c b/sshfs.c
+index 7fe9c6e..65bad98 100644
+--- a/sshfs.c
++++ b/sshfs.c
+@@ -137,6 +137,7 @@
+ #define READDIR_MAX 32
+ 
+ #define MAX_PASSWORD 1024
++#define LINE_MAX _POSIX2_LINE_MAX
+ 
+ #ifdef __APPLE__
+ static char sshfs_program_path[PATH_MAX] = { 0 };
