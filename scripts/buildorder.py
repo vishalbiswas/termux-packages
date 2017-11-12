@@ -31,6 +31,10 @@ def unique_everseen(iterable, key=None):
 def die(msg):
     sys.exit('ERROR: ' + msg)
 
+def rchop(thestring, ending):
+    if thestring.endswith(ending):
+        return thestring[:-len(ending)]
+    return thestring
 
 class TermuxBuildFile(object):
     def __init__(self, path):
@@ -38,40 +42,45 @@ class TermuxBuildFile(object):
 
     def _get_dependencies(self):
         pkg_dep_prefix = 'TERMUX_PKG_DEPENDS='
+        pkg_build_dep_prefix = 'TERMUX_PKG_BUILD_DEPENDS='
         subpkg_dep_prefix = 'TERMUX_SUBPKG_DEPENDS='
+        comma_deps = ''
 
         with open(self.path, encoding="utf-8") as f:
             prefix = None
             for line in f:
                 if line.startswith(pkg_dep_prefix):
                     prefix = pkg_dep_prefix
+                elif line.startswith(pkg_build_dep_prefix):
+                    prefix = pkg_build_dep_prefix
                 elif line.startswith(subpkg_dep_prefix):
                     prefix = subpkg_dep_prefix
                 else:
                     continue
 
-                comma_deps = line[len(prefix):].replace('"', '').replace("'", '')
+                comma_deps += line[len(prefix):].replace('"', '').replace("'", '').replace("\n", ",")
 
-                return set([
-                    # Replace parenthesis to handle version qualifiers, as in "gcc (>= 5.0)":
-                    re.sub(r'\(.*?\)', '', dep).replace('-dev', '').strip() for dep in comma_deps.split(',')
-                ])
+        # Remove trailing ',' that is otherwise replacing the final newline
+        comma_deps = comma_deps[:-1]
+        if not comma_deps:
+            # no deps found
+            return set()
 
-        # no deps found
-        return set()
+        return set([
+            # Replace parenthesis to handle version qualifiers, as in "gcc (>= 5.0)":
+            rchop(re.sub(r'\(.*?\)', '', dep).strip(), '-dev') for dep in comma_deps.split(',')
+        ])
 
 
 class TermuxPackage(object):
-    PACKAGES_DIR = 'packages'
-
-    def __init__(self, name):
-        self.name = name
-        self.dir = os.path.join(self.PACKAGES_DIR, name)
+    def __init__(self, dir_path):
+        self.dir = dir_path
+        self.name = os.path.basename(self.dir)
 
         # search package build.sh
         build_sh_path = os.path.join(self.dir, 'build.sh')
         if not os.path.isfile(build_sh_path):
-            raise Exception("build.sh not found for package '" + name + "'")
+            raise Exception("build.sh not found for package '" + self.name + "'")
 
         self.buildfile = TermuxBuildFile(build_sh_path)
         self.deps = self.buildfile._get_dependencies()
@@ -83,11 +92,8 @@ class TermuxPackage(object):
         self.subpkgs = []
 
         for filename in os.listdir(self.dir):
-            if not filename.endswith('.subpackage.sh'):
-                continue
-
-            subpkg_name = filename.split('.subpackage.sh')[0]
-            subpkg = TermuxSubPackage(subpkg_name, parent=self)
+            if not filename.endswith('.subpackage.sh'): continue
+            subpkg = TermuxSubPackage(self.dir + '/' + filename, self)
 
             self.subpkgs.append(subpkg)
             self.deps |= subpkg.deps
@@ -104,14 +110,13 @@ class TermuxPackage(object):
 
 
 class TermuxSubPackage(TermuxPackage):
-
-    def __init__(self, name, parent=None):
+    def __init__(self, subpackage_file_path, parent):
         if parent is None:
             raise Exception("SubPackages should have a parent")
 
-        self.name = name
+        self.buildfile = TermuxBuildFile(subpackage_file_path)
+        self.name = os.path.basename(subpackage_file_path).split('.subpackage.sh')[0]
         self.parent = parent
-        self.buildfile = TermuxBuildFile(os.path.join(self.parent.dir, name + '.subpackage.sh'))
         self.deps = self.buildfile._get_dependencies()
 
     def __repr__(self):
@@ -128,16 +133,20 @@ pkgs_map = {}
 # Reverse dependencies
 pkg_depends_on = {}
 
-PACKAGES_DIR = 'packages'
+PACKAGES_DIRS = ['packages']
 
 
 def populate():
+    all_packages = []
+    for package_dir in PACKAGES_DIRS:
+        for pkgdir_name in sorted(os.listdir(package_dir)):
+            dir_path = package_dir + '/' + pkgdir_name
+            if os.path.isfile(dir_path + '/build.sh'):
+                all_packages.append(TermuxPackage(package_dir + '/' + pkgdir_name))
 
-    for pkgdir_name in sorted(os.listdir(PACKAGES_DIR)):
-
-        pkg = TermuxPackage(pkgdir_name)
-
-        pkgs_map[pkg.name] = pkg
+    for pkg in all_packages:
+        if pkg.name in pkgs_map: die('Duplicated package: ' + pkg.name)
+        else: pkgs_map[pkg.name] = pkg
 
         for subpkg in pkg.subpkgs:
             pkgs_map[subpkg.name] = pkg
@@ -203,34 +212,50 @@ def generate_full_buildorder():
 
     return build_order
 
+def deps(pkg):
+    l = []
+    for dep in sorted(pkg.deps):
+        l += deps_then_me(pkgs_map[dep])
+    return l
 
 def deps_then_me(pkg):
     l = []
-
     for dep in sorted(pkg.deps):
         l += deps_then_me(pkgs_map[dep])
     l += [pkg]
-
     return l
 
 
-def generate_targets_buildorder(targetnames):
+def generate_targets_buildorder(target_paths):
     buildorder = []
 
-    for pkgname in targetnames:
+    for target_path in target_paths:
+        if target_path.endswith('/'): target_path = target_path[:-1]
+        pkgname = os.path.basename(target_path)
         if not pkgname in pkgs_map:
             die('Dependencies for ' + pkgname + ' could not be calculated (skip dependency check with -s)')
-        buildorder += deps_then_me(pkgs_map[pkgname])
+        buildorder += deps(pkgs_map[pkgname])
 
     return unique_everseen(buildorder)
 
 if __name__ == '__main__':
+    full_buildorder = len(sys.argv) == 1
+    if not full_buildorder:
+        packages_real_path = os.path.realpath('packages')
+        for path in sys.argv[1:]:
+            if not os.path.isdir(path):
+                die('Not a directory: ' + path)
+            if path.endswith('/'): path = path[:-1]
+            parent_path = os.path.dirname(path)
+            if packages_real_path != os.path.realpath(parent_path):
+                PACKAGES_DIRS.append(parent_path)
+
     populate()
 
-    if len(sys.argv) == 1:
+    if full_buildorder:
         bo = generate_full_buildorder()
     else:
         bo = generate_targets_buildorder(sys.argv[1:])
 
     for pkg in bo:
-        print(pkg.name)
+        print(pkg.dir)

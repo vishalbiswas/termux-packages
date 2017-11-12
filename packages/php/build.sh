@@ -1,9 +1,8 @@
 TERMUX_PKG_HOMEPAGE=https://php.net
 TERMUX_PKG_DESCRIPTION="Server-side, HTML-embedded scripting language"
-TERMUX_PKG_VERSION=7.1.4
-TERMUX_PKG_REVISION=1
+TERMUX_PKG_VERSION=7.1.11
+TERMUX_PKG_SHA256=074093e9d7d21afedc5106904218a80a47b854abe368d2728ed22184c884893e
 TERMUX_PKG_SRCURL=http://www.php.net/distributions/php-${TERMUX_PKG_VERSION}.tar.xz
-TERMUX_PKG_SHA256=71514386adf3e963df087c2044a0b3747900b8b1fc8da3a99f0a0ae9180d300b
 # Build native php for phar to build (see pear-Makefile.frag.patch):
 TERMUX_PKG_HOSTBUILD=true
 # Build the native php without xml support as we only need phar:
@@ -36,6 +35,7 @@ ac_cv_func_res_nsearch=no
 --with-zlib
 --with-pgsql=shared,$TERMUX_PREFIX
 --with-pdo-pgsql=shared,$TERMUX_PREFIX
+--with-apxs2=$TERMUX_PREFIX/bin/apxs
 --enable-fpm
 --sbindir=$TERMUX_PREFIX/bin
 "
@@ -47,7 +47,6 @@ termux_step_pre_configure () {
 	export NATIVE_PHP_EXECUTABLE=$TERMUX_PKG_HOSTBUILD_DIR/sapi/cli/php
 
 	# Run autoconf since we have patched config.m4 files.
-	cd $TERMUX_PKG_SRCDIR
 	autoconf
 
 	export EXTENSION_DIR=$TERMUX_PREFIX/lib/php

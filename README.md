@@ -1,5 +1,6 @@
 Termux packages
 ===============
+[![Build Status](https://travis-ci.org/termux/termux-packages.svg?branch=master)](https://travis-ci.org/termux/termux-packages)
 [![Join the chat at https://gitter.im/termux/termux](https://badges.gitter.im/termux/termux.svg)](https://gitter.im/termux/termux)
 
 This project contains scripts and patches to build packages for the
@@ -17,7 +18,7 @@ This source folder is mounted as the `/root/termux-packages` data volume, so cha
 in sync between the host and the container when trying things out before committing, and built
 deb files will be available on the host in the `debs/` directory just as when building on the host.
 
-The docker container used for building packages is a Ubuntu 17.04 installation with necessary packages
+The docker container used for building packages is a Ubuntu 17.10 installation with necessary packages
 pre-installed. The default user is a non-root user to avoid problems with package builds modifying the system
 by mistake, but `sudo` can be used to install additional Ubuntu packages to be used during development.
 
@@ -33,7 +34,7 @@ Note that building packages can take up a lot of space (especially if `build-all
 
 Build environment without Docker
 ================================
-If you can't run Docker you can use a Ubuntu 17.04 installation (either by installing a virtual maching guest or on direct hardware) by using the below scripts:
+If you can't run Docker you can use a Ubuntu 17.10 installation (either by installing a virtual maching guest or on direct hardware) by using the below scripts:
 
 - Run `scripts/setup-ubuntu.sh` to install required packages and setup the `/data/` folder.
 
@@ -111,16 +112,15 @@ Common porting problems
 
 dlopen() and RTLD&#95;&#42; flags
 =================================
-&lt;dlfcn.h&gt; originally declares
+&lt;dlfcn.h&gt; declares
 
-    enum { RTLD_NOW=0, RTLD_LAZY=1, RTLD_LOCAL=0, RTLD_GLOBAL=2,       RTLD_NOLOAD=4}; // 32-bit
-    enum { RTLD_NOW=2, RTLD_LAZY=1, RTLD_LOCAL=0, RTLD_GLOBAL=0x00100, RTLD_NOLOAD=4}; // 64-bit
+    RTLD_NOW=0; RTLD_LAZY=1; RTLD_LOCAL=0; RTLD_GLOBAL=2;       RTLD_NOLOAD=4; // 32-bit
+    RTLD_NOW=2; RTLD_LAZY=1; RTLD_LOCAL=0; RTLD_GLOBAL=0x00100; RTLD_NOLOAD=4; // 64-bit
 
 These differs from glibc ones in that
 
-1. They are not preprocessor #define:s so cannot be checked for with `#ifdef RTLD_GLOBAL`. Termux patches this to #define values for compatibility with several packages.
-2. They differ in value from glibc ones, so cannot be hardcoded in files (DLFCN.py in python does this)
-3. They are missing some values (`RTLD_BINDING_MASK`, `RTLD_NOLOAD`, ...)
+1. They differ in value from glibc ones, so cannot be hardcoded in files (DLFCN.py in python does this)
+2. They are missing some values (`RTLD_BINDING_MASK`, ...)
 
 Android Dynamic Linker
 ======================
