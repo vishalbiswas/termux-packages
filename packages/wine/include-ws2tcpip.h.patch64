@@ -1,0 +1,11 @@
+--- ./include/ws2tcpip.h	2017-11-13 22:54:20.236516182 +0530
++++ ../ws2tcpip.h	2017-11-13 22:55:20.109609367 +0530
+@@ -54,7 +54,7 @@
+     struct WS(addrinfoW)*   ai_next;
+ } ADDRINFOW, *PADDRINFOW;
+ 
+-typedef int WS(socklen_t);
++typedef unsigned int WS(socklen_t);
+ 
+ typedef ADDRINFOA ADDRINFO, *LPADDRINFO;
+ 
