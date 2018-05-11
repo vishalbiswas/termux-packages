@@ -1,0 +1,20 @@
+--- ../sendto.c.orig	2018-05-11 10:24:04.435833050 +0000
++++ ./src/lib/sendto.c	2018-05-11 10:45:20.609090437 +0000
+@@ -72,17 +72,3 @@
+ 
+ 	return tsocks_libc_sendto(LIBC_SENDTO_ARGS);
+ }
+-
+-/*
+- * Libc hijacked symbol sendto(2).
+- */
+-LIBC_SENDTO_DECL
+-{
+-	if (!tsocks_libc_sendto) {
+-		tsocks_initialize();
+-		tsocks_libc_sendto = tsocks_find_libc_symbol(
+-				LIBC_SENDTO_NAME_STR, TSOCKS_SYM_EXIT_NOT_FOUND);
+-	}
+-
+-	return tsocks_sendto(LIBC_SENDTO_ARGS);
+-}
