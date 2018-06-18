@@ -1,0 +1,10 @@
+--- ./src/pal/inc/rt/objidl.h	2018-05-14 23:07:38.000000000 +0530
++++ ../objidl.h	2018-06-17 13:18:40.237043570 +0530
+@@ -101,6 +101,7 @@
+ 	STREAM_SEEK_END	= 2
+     } 	STREAM_SEEK;
+ 
++#undef LOCK_WRITE
+ typedef 
+ enum tagLOCKTYPE
+     {	LOCK_WRITE	= 1,

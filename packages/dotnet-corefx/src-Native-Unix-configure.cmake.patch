@@ -1,0 +1,11 @@
+--- ./src/Native/Unix/configure.cmake	2018-05-11 02:32:05.000000000 +0530
++++ ../configure.cmake	2018-06-17 14:55:49.938657247 +0530
+@@ -10,7 +10,7 @@
+ include(CheckSymbolExists)
+ include(CheckTypeSize)
+ 
+-if (CMAKE_SYSTEM_NAME STREQUAL Linux)
++if (CMAKE_SYSTEM_NAME STREQUAL Linux OR CMAKE_SYSTEM_NAME STREQUAL Android)
+     set(PAL_UNIX_NAME \"LINUX\")
+ elseif (CMAKE_SYSTEM_NAME STREQUAL Darwin)
+     set(PAL_UNIX_NAME \"OSX\")

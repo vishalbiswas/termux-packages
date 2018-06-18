@@ -1,0 +1,11 @@
+--- ./src/debug/createdump/crashinfo.h	2018-05-14 23:07:38.000000000 +0530
++++ ../crashinfo.h	2018-06-17 13:13:44.648138402 +0530
+@@ -3,6 +3,8 @@
+ // See the LICENSE file in the project root for more information.
+ 
+ // typedef for our parsing of the auxv variables in /proc/pid/auxv.
++#include <array>
++#include <string>
+ #if defined(__i386) || defined(__ARM_EABI__) 
+ typedef Elf32_auxv_t elf_aux_entry;
+ #define PRIx PRIx32

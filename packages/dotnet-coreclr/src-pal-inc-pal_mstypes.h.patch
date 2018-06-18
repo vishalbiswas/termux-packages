@@ -1,0 +1,11 @@
+--- ./src/pal/inc/pal_mstypes.h	2018-05-14 23:07:38.000000000 +0530
++++ ../pal_mstypes.h	2018-06-17 14:00:28.548505228 +0530
+@@ -218,7 +218,7 @@
+ typedef unsigned __int32 uint32_t;
+ typedef __int16 int16_t;
+ typedef unsigned __int16 uint16_t;
+-typedef __int8 int8_t;
++typedef signed __int8 int8_t;
+ typedef unsigned __int8 uint8_t;
+ #endif
+ 

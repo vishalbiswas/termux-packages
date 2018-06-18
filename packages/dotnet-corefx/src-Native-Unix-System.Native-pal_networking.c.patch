@@ -1,0 +1,11 @@
+--- ./src/Native/Unix/System.Native/pal_networking.c	2018-05-11 02:32:05.000000000 +0530
++++ ../pal_networking.c	2018-06-17 15:20:11.024041099 +0530
+@@ -400,7 +400,7 @@
+     // On Android, there's no getdomainname but we can use uname to fetch the domain name
+     // of the current device
+     size_t namelen = (uint32_t)nameLength;
+-    utsname  uts;
++    struct utsname  uts;
+ 
+     // If uname returns an error, bail out.
+     if (uname(&uts) == -1)
